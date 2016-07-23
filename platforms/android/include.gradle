@@ -1,0 +1,7 @@
+repositories {
+    maven { url 'http://clojars.org/repo' }
+}
+
+dependencies {
+    compile 'com.pusher:pusher-java-client:0.3.3'
+}
