@@ -1,8 +1,9 @@
 {
   "name": "nativescript-pusher",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "pusher.js",
+  "typings":"index.d.ts",
   "nativescript": {
     "platforms": {
       "android": "1.6.0",

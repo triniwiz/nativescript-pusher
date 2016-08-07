@@ -1,1 +1,1 @@
-export class Pusher{}
+export * from './src/ios/pusher';
