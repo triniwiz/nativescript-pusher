@@ -1,6 +1,6 @@
 export declare class Pusher {
-    _pusher: any;
-    _options: any;
+    private _pusher;
+    private _options;
     constructor(apiKey: string, options?: Options);
     connect(callback?: Function): void;
     disconnect(): void;

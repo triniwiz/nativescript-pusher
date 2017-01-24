@@ -6,4 +6,7 @@ demo/*.d.ts
 demo/lib
 demo/platforms
 demo/node_modules
+demo/server/node_modules
 node_modules
+.idea
+.vscode

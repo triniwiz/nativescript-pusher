@@ -3,5 +3,5 @@ repositories {
 }
 
 dependencies {
-    compile 'com.pusher:pusher-java-client:0.3.3'
+    compile 'com.pusher:pusher-java-client:1.4.0'
 }
