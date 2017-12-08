@@ -1,0 +1,11 @@
+android {
+    productFlavors {
+        "nativescript-pusher" {
+            dimension "nativescript-pusher"
+        }
+    }
+}
+
+dependencies {
+    compile 'com.pusher:pusher-java-client:1.6.0'
+}
