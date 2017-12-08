@@ -1,8 +1,12 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
   <StackLayout>
-    <ListView items="messages">
+    <Button tap="connect" text="Connect"/>
+    <Label text="{{'Connection Status ' +  connectionStatus }}"/>
+    <Label text="{{ 'Channel Name ' + channelName +  ': Event Name ' + eventName }}"/>
+    <Button tap="disconnect" text="Disconnect"/>
+    <ListView items="{{messages}}" height="100%">
     <ListView.itemTemplate>
-    <Label text="{{ messages.text }}" class="message" textWrap="true"/>
+    <Label text="{{ text }}" class="message" textWrap="true"/>
     </ListView.itemTemplate>
     </ListView>
   </StackLayout>
