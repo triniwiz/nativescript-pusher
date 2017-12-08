@@ -45,7 +45,7 @@ your api key
 
 | IOS                                     | Android                                     |
 | --------------------------------------- | ------------------------------------------- |
-| ![IOS](https://i.imgur.com/pKPteiv.gif) | ![Android](https://i.imgur.com/kUdmbWk.gifv) |
+| ![IOS](https://i.imgur.com/pKPteiv.gif) | ![Android](https://i.imgur.com/kUdmbWk.gif) |
 
 # TODO
 
