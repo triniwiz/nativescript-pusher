@@ -1,5 +1,12 @@
 var Pusher = require('pusher');
-
+var messages = [
+  { text: 'Osei' },
+  { text: 'Sean' },
+  { text: 'Brad' },
+  { text: 'John' },
+  { text: 'Jen' },
+  { text: 'Nathan' }
+];
 var pusher = new Pusher({
   appId: '232833',
   key: '08e36d57b01061a58520',
@@ -8,9 +15,9 @@ var pusher = new Pusher({
 });
 
 pusher.trigger('android', 'test-android', {
-  message: 'hello android world'
+  messages: messages
 });
 
 pusher.trigger('ios', 'test-ios', {
-  message: 'hello ios world'
+  messages: messages
 });

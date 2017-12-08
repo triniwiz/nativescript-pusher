@@ -1,13 +1,17 @@
-import { Common, Options } from './pusher.common';
-export class TNSPusher extends Common {
+import { Common } from './pusher.common';
+import { Options } from './interfaces';
+import { ConnectionStatus } from './enums';
+export * from './interfaces';
+export * from './enums';
+export class Pusher extends Common {
   private _options;
   android: com.pusher.client.Pusher;
 
   constructor(apiKey: string, options?: Options) {
     super();
-    this.channels = new Map();
-    this.presenceChannels = new Map();
-    this.privateChannels = new Map();
+    this.channelsCallback = new Map();
+    this.presenceChannelsCallback = new Map();
+    this.privateChannelsCallback = new Map();
     this.eventChannels = new Map();
     this.privateEventChannels = new Map();
     if (options) {
@@ -44,20 +48,35 @@ export class TNSPusher extends Common {
       this.android = new com.pusher.client.Pusher(apiKey);
     }
   }
+  private getConnectionStatus(status): ConnectionStatus {
+    switch (status) {
+      case com.pusher.client.connection.ConnectionState.CONNECTED:
+        return ConnectionStatus.CONNECTED;
+      case com.pusher.client.connection.ConnectionState.CONNECTING:
+        return ConnectionStatus.CONNECTING;
+      case com.pusher.client.connection.ConnectionState.DISCONNECTED:
+        return ConnectionStatus.DISCONNECTED;
+      case com.pusher.client.connection.ConnectionState.DISCONNECTING:
+        return ConnectionStatus.DISCONNECTING;
+      default:
+        return ConnectionStatus.RECONNECTING;
+    }
+  }
+
   connect(callback?: Function): void {
     if (typeof callback === 'function') {
+      const ref = new WeakRef(this);
       this.android.connect(
         new com.pusher.client.connection.ConnectionEventListener({
           onConnectionStateChange(change) {
-            callback(null, [
-              {
-                current: change.getCurrentState(),
-                previous: change.getPreviousState()
-              }
-            ]);
+            const owner = ref.get();
+            callback(null, {
+              current: owner.getConnectionStatus(change.getCurrentState()),
+              previous: owner.getConnectionStatus(change.getPreviousState())
+            });
           },
           onError(message, code, e) {
-            callback(new Error(message));
+            callback(message, null);
           }
         }),
         <any>[com.pusher.client.connection.ConnectionState.ALL]
@@ -69,41 +88,34 @@ export class TNSPusher extends Common {
   disconnect(): void {
     this.android.disconnect();
   }
-  getChannel(channelName: string) {
-    return this.android.getChannel(channelName);
-  }
-  getConnection() {
-    return this.android.getConnection();
-  }
-  getPresenceChannel(channelName: string) {
-    return this.android.getPresenceChannel(channelName);
-  }
-  getPrivateChannel(channelName: string) {
-    return this.android.getPrivateChannel(channelName);
-  }
-
   subscribeToChannelEvent(
     channelName: string,
     event: string,
-    callback?: Function
+    callback: Function
   ): void {
-    if (this.channels.has(channelName)) {
-      const channel = this.channels.get(channelName)['channel'];
+    const channel = this.android.getChannel(channelName);
+    if (channel) {
       if (channel && !channel.isSubscribed()) {
-        (channel as any).bind(
-          event,
-          new com.pusher.client.channel.SubscriptionEventListener({
+        const ref = new WeakRef(this);
+        const binding = new com.pusher.client.channel.SubscriptionEventListener(
+          {
             onEvent(cName: string, eName: string, data: string) {
-              callback({
-                channel: cName,
-                eventName: eName,
-                data: data
-              });
+              const owner = ref.get();
+              if (owner.eventChannels.has(`${cName}_${eName}`)) {
+                const eventData = owner.eventChannels.get(`${cName}_${eName}`);
+                const cb = eventData.callback;
+                cb(null, {
+                  channelName: cName,
+                  eventName: eName,
+                  data: JSON.parse(data)
+                });
+              }
             }
-          })
+          }
         );
-        this.eventChannels.set(`${channel}_${event}`, {
-          channel: channel,
+        (channel as any).bind(event, binding);
+        this.eventChannels.set(`${channelName}_${event}`, {
+          binding: binding,
           callback: callback
         });
       }
@@ -115,7 +127,7 @@ export class TNSPusher extends Common {
 
   subscribeToChannel(channelName: string, callback?: Function): void {
     if (channelName) {
-      if (!this.channels.has(channelName)) {
+      if (!this.android.getChannel(channelName)) {
         let channel;
         if (typeof callback === 'function') {
           const listener = new com.pusher.client.channel.ChannelEventListener(
@@ -126,39 +138,35 @@ export class TNSPusher extends Common {
             }
           );
           channel = this.android.subscribe(channelName, <any>listener, <any>[]);
+          this.channelsCallback.set(channelName, callback);
         } else {
           channel = this.android.subscribe(channelName);
         }
-        this.channels.set(channelName, {
-          channel: channel,
-          callback: callback
-        });
       }
     }
   }
 
   subscribePresence(channelName: string, callback?: Function): void {
-    if (!this.presenceChannels.has(channelName)) {
-      let presenceChannel;
+    if (!this.android.getPresenceChannel(channelName)) {
       if (typeof callback === 'function') {
-        presenceChannel = (this.android as any).subscribePresence(
+        (this.android as any).subscribePresence(
           channelName,
           new com.pusher.client.channel.PresenceChannelEventListener(<any>{
             onUsersInformationReceived(channelName, users) {
               callback(null, {
-                channel: channelName,
+                channelName: channelName,
                 users: users
               });
             },
             userSubscribed(channelName, user) {
               callback(null, {
-                channel: channelName,
+                channelName: channelName,
                 user: user
               });
             },
             userUnsubscribed(channelName, user) {
               callback(null, {
-                channel: channelName,
+                channelName: channelName,
                 user: user
               });
             },
@@ -167,21 +175,17 @@ export class TNSPusher extends Common {
             }
           })
         );
+        this.presenceChannelsCallback.set(channelName, callback);
       } else {
         this.android.subscribePresence(channelName);
       }
-      this.presenceChannels.set(channelName, {
-        channel: presenceChannel,
-        callback: callback
-      });
     }
   }
 
   subscribeToPrivateChannel(channelName: string, callback?: Function): void {
-    if (!this.privateChannels.has(channelName)) {
-      let privateChannel;
+    if (!this.android.getPrivateChannel(channelName)) {
       if (typeof callback === 'function') {
-        privateChannel = (this.android as any).subscribePrivate(
+        (this.android as any).subscribePrivate(
           channelName,
           new com.pusher.client.channel.PrivateChannelEventListener(<any>{
             onAuthenticationFailure(message: string, e: any) {
@@ -192,13 +196,10 @@ export class TNSPusher extends Common {
             }
           })
         );
+        this.privateChannelsCallback.set(channelName, callback);
       } else {
-        privateChannel = this.android.subscribePrivate(channelName);
+        this.android.subscribePrivate(channelName);
       }
-      this.privateChannels.set(channelName, {
-        channel: privateChannel,
-        callback: callback
-      });
     }
   }
   subscribeToPrivateChannelEvent(
@@ -206,23 +207,30 @@ export class TNSPusher extends Common {
     event: string,
     callback?: Function
   ): void {
-    if (this.privateChannels.has(channelName)) {
-      const channel = this.privateChannels.get(channelName)['channel'];
+    if (this.android.getPrivateChannel(channelName)) {
+      const channel = this.android.getPrivateChannel(channelName);
       if (channel && !channel.isSubscribed()) {
-        (channel as any).bind(
-          event,
-          new com.pusher.client.channel.SubscriptionEventListener({
+        const ref = new WeakRef(this);
+        const binding = new com.pusher.client.channel.SubscriptionEventListener(
+          {
             onEvent(cName: string, eName: string, data: string) {
-              callback({
-                channel: cName,
-                eventName: eName,
-                data: data
-              });
+              const owner = ref.get();
+              if (owner.eventChannels.has(`${cName}_${eName}`)) {
+                const eventData = owner.eventChannels.get(`${cName}_${eName}`);
+                const cb = eventData.callback;
+                cb(null, {
+                  channelName: cName,
+                  eventName: eName,
+                  data: JSON.parse(data)
+                });
+              }
             }
-          })
+          }
         );
-        this.privateEventChannels.set(`${channel}_${event}`, {
-          channel: channel,
+        (channel as any).bind(event, binding);
+
+        this.privateEventChannels.set(`${channelName}_${event}`, {
+          binding: binding,
           callback: callback
         });
       }
@@ -231,12 +239,35 @@ export class TNSPusher extends Common {
       this.subscribeToPrivateChannelEvent(channelName, event, callback);
     }
   }
+  unsubscribeAll(): void {
+    // TODO
+  }
+  unsubscribeEvent(channelName: string, event: string): void {
+    if (this.eventChannels.has(`${channelName}_${event}`)) {
+      const eventData = this.eventChannels.get(`${channelName}_${event}`);
+      const channel = this.android.getChannel(channelName);
+      channel.unbind(event, eventData.binding);
+    }
+  }
+  unsubscribePrivateEvent(channelName: string, event: string): void {
+    if (this.privateEventChannels.has(`${channelName}_${event}`)) {
+      const eventData = this.privateEventChannels.get(
+        `${channelName}_${event}`
+      );
+      const channel = this.android.getPrivateChannel(channelName);
+      channel.unbind(event, eventData.binding);
+    }
+  }
   unsubscribe(channelName: string): void {
     this.android.unsubscribe(channelName);
-    this.channels.delete(channelName);
+    if (this.channelsCallback.has(channelName)) {
+      this.channelsCallback.delete(channelName);
+    }
   }
   unsubscribePrivate(channelName: string): void {
-    this.unsubscribe(channelName);
-    this.privateChannels.delete(channelName);
+    this.android.unsubscribe(channelName);
+    if (this.privateChannelsCallback.has(channelName)) {
+      this.privateChannelsCallback.delete(channelName);
+    }
   }
 }

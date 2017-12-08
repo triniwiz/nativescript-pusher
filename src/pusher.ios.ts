@@ -1,37 +1,41 @@
 /// <reference path="./node_modules/tns-core-modules/tns-core-modules.d.ts" />
-import { Common, Options, ConnectionStatus } from './pusher.common';
+import { Common } from './pusher.common';
+import { Options } from './interfaces';
+import { ConnectionStatus } from './enums';
+export * from './interfaces';
+export * from './enums';
 import { deserialize } from './helper';
-export class TNSPusher extends Common {
+import { getClass } from 'tns-core-modules/utils/types';
+export class Pusher extends Common {
   private _options;
   _connectionCallback;
-  ios: Pusher;
-  constructor(apiKey: string, options: Options = {}) {
+  ios: PTPusher;
+  constructor(apiKey: string, options: Options = { encrypted: true }) {
     super();
-    this.channels = new Map();
-    this.presenceChannels = new Map();
+    this.channelsCallback = new Map();
+    this.presenceChannelsCallback = new Map();
     this.eventChannels = new Map();
-    this.privateChannels = new Map();
+    this.privateChannelsCallback = new Map();
     this.privateEventChannels = new Map();
-    let ocAuthMethod;
-    // if (options.authorizer) {
-    //   ocAuthMethod = OCAuthMethod.alloc().initWithAuthEndpoint(
-    //     options.authorizer
-    //   );
-    // }
-
-    // this._options = PusherClientOptions.alloc().initWithOcAuthMethodAttemptToReturnJSONObjectAutoReconnectOcHostPortEncrypted(
-    //   ocAuthMethod,
-    //   true,
-    //   Boolean(options.autoReconnect),
-    //   options.cluster
-    //     ? OCPusherHost.alloc().initWithCluster(options.cluster)
-    //     : null,
-    //   null,
-    //   Boolean(options.encrypted)
-    // );
-
-    this.ios = Pusher.alloc().initWithKey(apiKey); // Pusher.alloc().initWithAppKeyOptions(apiKey, this._options);
-    this.ios.delegate = TNSPusherDelegateImpl.initWithOwner(new WeakRef(this));
+    if (options.cluster) {
+      this.ios = PTPusher.pusherWithKeyDelegateEncryptedCluster(
+        apiKey,
+        TNSPusherDelegateImpl.initWithOwner(new WeakRef(this)),
+        options.encrypted,
+        options.cluster
+      );
+    } else if (!options.cluster && !options.encrypted) {
+      this.ios = PTPusher.pusherWithKeyDelegateEncrypted(
+        apiKey,
+        TNSPusherDelegateImpl.initWithOwner(new WeakRef(this)),
+        options.encrypted
+      );
+    } else {
+      this.ios = PTPusher.pusherWithKeyDelegate(
+        apiKey,
+        TNSPusherDelegateImpl.initWithOwner(new WeakRef(this))
+      );
+    }
   }
   connect(callback?: Function): void {
     this._connectionCallback = callback;
@@ -43,99 +47,79 @@ export class TNSPusher extends Common {
   subscribeToChannelEvent(
     channelName: string,
     event: string,
-    callback?: Function
+    callback: Function
   ): void {
-    if (this.channels.has(channelName)) {
-      const channel = this.channels.get(channelName)['channel'];
-      // TODO Check why channel.bindWithEventNameCallback is undefined
-      if (channel && !channel.subscribed) {
-        channel.bindWithEventNameCallback(event, data => {
-          callback({
-            channel: channelName,
-            eventName: event,
-            data: deserialize(data)
+    const channel = this.ios.channelNamed(channelName);
+    if (channel) {
+      const binding = channel.bindToEventNamedHandleWithBlock(
+        event,
+        ptEvent => {
+          callback(null, {
+            channelName: ptEvent.channel,
+            eventName: ptEvent.name,
+            data: deserialize(ptEvent.data)
           });
-        });
-        this.eventChannels.set(`${channel}_${event}`, {
-          channel: channel,
-          callback: callback
-        });
-      }
+        }
+      );
+      this.eventChannels.set(`${channel}_${event}`, {
+        binding: binding,
+        callback: callback
+      });
     } else {
       this.subscribeToChannel(channelName);
       this.subscribeToChannelEvent(channelName, event, callback);
     }
   }
   subscribeToChannel(channelName: string, callback?: Function): void {
-    if (channelName) {
-      const channel = this.ios.subscribeWithChannelName(channelName);
-      this.channels.set(channelName, {
-        channel: channel,
-        callback: callback
-      });
+    if (channelName && !this.ios.channelNamed(channelName)) {
+      const channel = this.ios.subscribeToChannelNamed(channelName);
+      this.channelsCallback.set(channelName, callback);
     }
   }
   subscribePresence(channelName: string, callback?: Function): void {
-    if (!this.presenceChannels.has(channelName)) {
-      let presenceChannel;
+    let presenceChannel = this.ios.channelNamed(`presence-${channelName}`);
+    if (presenceChannel) {
       if (typeof callback === 'function') {
-        presenceChannel = this.ios.subscribeToPresenceChannelWithChannelNameOnMemberAddedOnMemberRemoved(
+        presenceChannel = this.ios.subscribeToPresenceChannelNamedDelegate(
           channelName,
-          added => {
-            callback(null, {
-              channel: channelName,
-              user: added.userId
-            });
-          },
-          removed => {
-            callback(null, {
-              channel: channelName,
-              user: removed.userId
-            });
-          }
+          TNSPusherPresenceChannelDelegateImpl.initWithOwner(new WeakRef(this))
         );
       } else {
-        presenceChannel = this.ios.subscribeToPresenceChannelWithChannelName(
-          channelName
-        );
+        presenceChannel = this.ios.subscribeToPresenceChannelNamed(channelName);
       }
-      this.presenceChannels.set(channelName, {
-        channel: presenceChannel,
-        callback: callback
-      });
+      this.presenceChannelsCallback.set(channelName, callback);
     }
   }
 
   subscribeToPrivateChannel(channelName: string, callback?: Function): void {
-    channelName = `private-${channelName}`;
-    if (!this.privateChannels.has(channelName)) {
-      const privateChannel = this.ios.subscribeWithChannelName(channelName);
-      this.privateChannels.set(channelName, {
-        channel: privateChannel,
-        callback: callback
-      });
+    let privateChannel = this.ios.channelNamed(`private-${channelName}`);
+    if (!privateChannel) {
+      privateChannel = this.ios.subscribeToPrivateChannelNamed(channelName);
+      if (callback) {
+        this.privateChannelsCallback.set(channelName, callback);
+      }
     }
   }
-
   subscribeToPrivateChannelEvent(
     channelName: string,
     event: string,
-    callback?: Function
+    callback: Function
   ): void {
-    channelName = `private-${channelName}`;
-    if (this.privateChannels.has(channelName)) {
-      const channel = this.privateChannels.get(channelName)['channel'];
-
-      if (channel && !channel.subscribed) {
-        channel.bindWithEventNameCallback(event, data => {
-          callback({
-            channel: channelName,
-            eventName: event,
-            data: deserialize(data)
-          });
-        });
-        this.privateEventChannels.set(`${channel}_${event}`, {
-          channel: channel,
+    let privateChannel = this.ios.channelNamed(`private-${channelName}`);
+    if (privateChannel) {
+      if (privateChannel && privateChannel.subscribed) {
+        const binding = privateChannel.bindToEventNamedHandleWithBlock(
+          event,
+          ptEvent => {
+            callback(null, {
+              channelName: ptEvent.channel,
+              eventName: ptEvent.name,
+              data: deserialize(ptEvent.data)
+            });
+          }
+        );
+        this.privateEventChannels.set(`${channelName}_${event}`, {
+          binding: binding,
           callback: callback
         });
       }
@@ -144,73 +128,186 @@ export class TNSPusher extends Common {
       this.subscribeToPrivateChannelEvent(channelName, event, callback);
     }
   }
+  unsubscribeAll(): void {
+    this.ios.unsubscribeAllChannels();
+  }
+
+  unsubscribeEvent(channelName: string, event: string): void {
+    if (this.eventChannels.has(`${channelName}_${event}`)) {
+      const eventData = this.eventChannels.get(`${channelName}_${event}`);
+      const channel = this.ios.channelNamed(channelName);
+      if (channel) {
+        channel.removeBinding(eventData.binding);
+        this.eventChannels.delete(`${channelName}_${event}`);
+      }
+    }
+  }
+
+  unsubscribePrivateEvent(channelName: string, event: string): void {
+    if (this.privateEventChannels.has(`${channelName}_${event}`)) {
+      const eventData = this.privateEventChannels.get(
+        `${channelName}_${event}`
+      );
+      const channel = this.ios.channelNamed(`private-${channelName}`);
+      if (channel) {
+        channel.removeBinding(eventData.binding);
+        this.privateEventChannels.delete(`${channelName}_${event}`);
+      }
+    }
+  }
   unsubscribe(channelName: string): void {
-    this.ios.unsubscribe(channelName);
+    const channel = this.ios.channelNamed(channelName);
+    if (channel) {
+      channel.unsubscribe();
+      if (this.channelsCallback.has(channelName)) {
+        this.channelsCallback.delete(channelName);
+      }
+    }
   }
   unsubscribePrivate(channelName: string): void {
-    channelName = `private-${channelName}`;
-    this.ios.unsubscribe(channelName);
-    this.privateChannels.delete(channelName);
+    const privateChannel = this.ios.channelNamed(`private-${channelName}`);
+    if (privateChannel) {
+      privateChannel.unsubscribe();
+      if (this.privateChannelsCallback.has(channelName)) {
+        this.privateChannelsCallback.delete(channelName);
+      }
+    }
   }
 }
 
-export class TNSPusherDelegateImpl extends NSObject implements PusherDelegate {
-  public static ObjCProtocols = [PusherDelegate];
-  private _owner: TNSPusher;
-  public static initWithOwner(owner: WeakRef<any>): TNSPusherDelegateImpl {
+export class TNSPusherDelegateImpl extends NSObject
+  implements PTPusherDelegate {
+  public static ObjCProtocols = [PTPusherDelegate];
+  private _owner: WeakRef<Pusher>;
+  private _previous = ConnectionStatus.DISCONNECTED;
+  public static initWithOwner(owner: WeakRef<Pusher>): TNSPusherDelegateImpl {
     const delegate = new TNSPusherDelegateImpl();
-    delegate._owner = owner.get();
+    delegate._owner = owner;
     return delegate;
   }
-  changedConnectionStateFromTo(
-    old: ConnectionState,
-    new_: ConnectionState
+
+  pusherConnectionDidConnect(
+    pusher: PTPusher,
+    connection: PTPusherConnection
   ): void {
-    const callback = this._owner._connectionCallback;
+    const owner = this._owner.get();
+    const callback = owner._connectionCallback;
     if (typeof callback === 'function') {
-      this._owner._connectionCallback(null, {
-        current: this.getStatus(new_),
-        previous: this.getStatus(old)
+      owner._connectionCallback(null, {
+        current: ConnectionStatus.CONNECTED,
+        previous: this._previous
       });
+      this._previous = ConnectionStatus.CONNECTED;
     }
   }
 
-  private getStatus(status) {
-    switch (status) {
-      case ConnectionState.Connecting:
-        return ConnectionStatus.CONNECTING;
-      case ConnectionState.Connected:
-        return ConnectionStatus.CONNECTED;
-      case ConnectionState.Disconnecting:
-        return ConnectionStatus.DISCONNECTING;
-      case ConnectionState.Disconnected:
-        return ConnectionStatus.DISCONNECTED;
-      default:
-        return ConnectionStatus.RECONNECTING;
+  pusherConnectionDidDisconnectWithErrorWillAttemptReconnect(
+    pusher: PTPusher,
+    connection: PTPusherConnection,
+    error: NSError,
+    willAttemptReconnect: boolean
+  ): void {
+    const owner = this._owner.get();
+    const callback = owner._connectionCallback;
+    if (typeof callback === 'function') {
+      owner._connectionCallback(null, {
+        current: ConnectionStatus.DISCONNECTED,
+        previous: this._previous
+      });
+      this._previous = ConnectionStatus.DISCONNECTED;
     }
   }
 
-  failedToSubscribeToChannelWithNameResponseDataError(
-    name: string,
-    response: NSURLResponse,
-    data: string,
+  pusherConnectionFailedWithError(
+    pusher: PTPusher,
+    connection: PTPusherConnection,
     error: NSError
   ): void {
-    if (this._owner.channels.has(name)) {
-      const channelData = this._owner.channels.get(name);
-      const callback = channelData.callback;
+    const owner = this._owner.get();
+    const callback = owner._connectionCallback;
+    if (typeof callback === 'function') {
+      owner._connectionCallback(null, {
+        current: ConnectionStatus.DISCONNECTED,
+        previous: this._previous
+      });
+      this._previous = ConnectionStatus.DISCONNECTED;
+    }
+  }
+
+  pusherDidFailToSubscribeToChannelWithError(
+    pusher: PTPusher,
+    channel: PTPusherChannel,
+    error: NSError
+  ): void {
+    const owner = this._owner.get();
+    if (owner.channelsCallback.has(channel.name)) {
+      const callback = owner.channelsCallback.get(channel.name);
       if (callback) {
         callback(error.localizedDescription, null);
       }
     }
   }
 
-  subscribedToChannelWithName(name: string): void {
-    if (this._owner.channels.has(name)) {
-      const channelData = this._owner.channels.get(name);
-      const callback = channelData.callback;
+  pusherDidSubscribeToChannel(
+    pusher: PTPusher,
+    channel: PTPusherChannel
+  ): void {
+    const owner = this._owner.get();
+    if (owner.channelsCallback.has(channel.name)) {
+      const callback = owner.channelsCallback.get(channel.name);
       if (callback) {
-        callback({ channelName: name });
+        callback(null, { channelName: channel.name });
+      }
+    }
+  }
+}
+
+export class TNSPusherPresenceChannelDelegateImpl extends NSObject
+  implements PTPusherPresenceChannelDelegate {
+  public static ObjCProtocols = [PTPusherPresenceChannelDelegate];
+  private _owner: WeakRef<Pusher>;
+  public static initWithOwner(
+    owner: WeakRef<Pusher>
+  ): TNSPusherPresenceChannelDelegateImpl {
+    const delegate = new TNSPusherPresenceChannelDelegateImpl();
+    delegate._owner = owner;
+    return delegate;
+  }
+  presenceChannelDidSubscribe(channel: PTPusherPresenceChannel): void {
+    const owner = this._owner.get();
+    if (owner.presenceChannelsCallback.has(channel.name)) {
+      const callback = owner.presenceChannelsCallback.get(channel.name);
+      if (callback) {
+        callback(null, {
+          channel: channel.name,
+          users: [] // channel.members
+        });
+      }
+    }
+  }
+
+  presenceChannelMemberAdded(
+    channel: PTPusherPresenceChannel,
+    member: PTPusherChannelMember
+  ): void {
+    const owner = this._owner.get();
+    if (owner.presenceChannelsCallback.has(channel.name)) {
+      const callback = owner.presenceChannelsCallback.get(channel.name);
+      if (callback) {
+        callback(null, { channelName: channel.name, user: member.userID });
+      }
+    }
+  }
+
+  presenceChannelMemberRemoved(
+    channel: PTPusherPresenceChannel,
+    member: PTPusherChannelMember
+  ): void {
+    const owner = this._owner.get();
+    if (owner.presenceChannelsCallback.has(channel.name)) {
+      const callback = owner.presenceChannelsCallback.get(channel.name);
+      if (callback) {
+        callback(null, { channelName: channel.name, user: member.userID });
       }
     }
   }

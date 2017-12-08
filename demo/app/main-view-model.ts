@@ -1,10 +1,13 @@
 import { Observable } from 'tns-core-modules/data/observable';
-import { TNSPusher } from 'nativescript-pusher';
+import { Pusher } from 'nativescript-pusher';
 
 export class HelloWorldModel extends Observable {
-  pusher: TNSPusher;
+  pusher: Pusher;
   constructor() {
     super();
-    this.pusher = new TNSPusher('08e36d57b01061a58520');
+    this.set('connectionStatus', '');
+    this.set('channelName', '');
+    this.set('eventName', '');
+    this.pusher = new Pusher('08e36d57b01061a58520');
   }
 }

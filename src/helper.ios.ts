@@ -12,7 +12,7 @@ export function serialize(data) {
 
       let obj = {};
       for (let key of Object.keys(data)) {
-        obj[key] = data[key];
+        obj[key] = serialize(data[key]);
       }
       return NSDictionary.dictionaryWithDictionary(<any>obj);
     default:
@@ -30,7 +30,7 @@ export function deserialize(nativeData) {
       const keysArray = nativeData.allKeys as NSArray<any>;
       for (let i = 0; i < length; i++) {
         const nativeKey = keysArray.objectAtIndex(i);
-        obj[nativeKey] = nativeData.objectForKey(nativeKey);
+        obj[nativeKey] = deserialize(nativeData.objectForKey(nativeKey));
       }
       return obj;
     case 'NSMutableArray':

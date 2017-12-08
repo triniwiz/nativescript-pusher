@@ -1,35 +1,24 @@
+import { ChannelEventMap } from './interfaces';
+export * from './interfaces';
+export * from './enums';
 export declare abstract class Common {
-    channels: Map<String, any>;
-    privateChannels: Map<String, any>;
-    presenceChannels: Map<String, any>;
-    eventChannels: Map<String, any>;
-    privateEventChannels: Map<String, any>;
+    channelsCallback: Map<String, Function>;
+    privateChannelsCallback: Map<String, Function>;
+    presenceChannelsCallback: Map<String, Function>;
+    eventChannels: Map<String, ChannelEventMap>;
+    privateEventChannels: Map<String, ChannelEventMap>;
     android: any;
     ios: any;
     abstract connect(callback?: Function): void;
     abstract disconnect(): void;
-    abstract subscribeToChannelEvent(channelName: string, event: string, callback?: Function): void;
+    abstract subscribeToChannelEvent(channelName: string, event: string, callback: Function): void;
     abstract subscribeToChannel(channelName: string): void;
     abstract subscribePresence(channelName: string, callback?: Function): void;
-    abstract subscribeToPrivateChannel(channelName: string, callback?: Function): void;
-    abstract subscribeToPrivateChannelEvent(channelName: string, event: string, callback?: Function): void;
+    abstract subscribeToPrivateChannel(channelName: string, callback: Function): void;
+    abstract subscribeToPrivateChannelEvent(channelName: string, event: string, callback: Function): void;
     abstract unsubscribe(channelName: string): void;
-}
-export interface Options {
-    activityTimeout?: number;
-    authorizer?: string;
-    cluster?: string;
-    encrypted?: boolean;
-    host?: string;
-    pongTimeout?: string;
-    wsPort?: number;
-    wssPort?: number;
-    autoReconnect?: boolean;
-}
-export declare enum ConnectionStatus {
-    CONNECTING = "connecting",
-    CONNECTED = "connected",
-    DISCONNECTING = "disconnecting",
-    DISCONNECTED = "disconnected",
-    RECONNECTING = "reconnecting",
+    abstract unsubscribePrivate(channelName: string): void;
+    abstract unsubscribeAll(): void;
+    abstract unsubscribeEvent(channelName: string, event: string): void;
+    abstract unsubscribePrivateEvent(channelName: string, event: string): void;
 }
