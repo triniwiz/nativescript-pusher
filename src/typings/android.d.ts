@@ -1,7 +1,5 @@
-/// <reference path="./_helpers.d.ts" />
 import javalangException = java.lang.Exception;
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
+
 declare module com {
 	export module pusher {
 		export module client {
@@ -15,7 +13,6 @@ declare module com {
 	}
 }
 
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -41,7 +38,6 @@ declare module com {
 /// <reference path="./com.pusher.client.connection.Connection.d.ts" />
 /// <reference path="./com.pusher.client.connection.ConnectionEventListener.d.ts" />
 /// <reference path="./com.pusher.client.connection.ConnectionState.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -94,7 +90,6 @@ declare module com {
 /// <reference path="./com.pusher.client.connection.Connection.d.ts" />
 /// <reference path="./com.pusher.client.connection.ConnectionEventListener.d.ts" />
 /// <reference path="./com.pusher.client.connection.ConnectionState.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -122,8 +117,6 @@ declare module com {
 
 import javanetProxy = java.net.Proxy;
 /// <reference path="./com.pusher.client.Authorizer.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
-/// <reference path="./java.net.Proxy.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -151,7 +144,6 @@ declare module com {
 }
 
 /// <reference path="./com.pusher.client.channel.SubscriptionEventListener.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -176,7 +168,6 @@ declare module com {
 	}
 }
 
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -197,7 +188,6 @@ declare module com {
 	}
 }
 
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -219,8 +209,6 @@ declare module com {
 import javautilSet = java.util.Set;
 /// <reference path="./com.pusher.client.channel.SubscriptionEventListener.d.ts" />
 /// <reference path="./com.pusher.client.channel.User.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
-/// <reference path="./java.util.Set.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -252,9 +240,6 @@ declare module com {
 }
 
 /// <reference path="./com.pusher.client.channel.User.d.ts" />
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
-/// <reference path="./java.util.Set.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -284,7 +269,6 @@ declare module com {
 }
 
 /// <reference path="./com.pusher.client.channel.SubscriptionEventListener.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -311,8 +295,6 @@ declare module com {
 	}
 }
 
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -335,7 +317,6 @@ declare module com {
 	}
 }
 
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -356,9 +337,6 @@ declare module com {
 
 import javalangClass = java.lang.Class;
 import javalangObject = java.lang.Object;
-/// <reference path="./java.lang.Class.d.ts" />
-/// <reference path="./java.lang.Object.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -382,7 +360,6 @@ declare module com {
 /// <reference path="./com.pusher.client.channel.SubscriptionEventListener.d.ts" />
 /// <reference path="./com.pusher.client.channel.impl.InternalChannel.d.ts" />
 /// <reference path="./com.pusher.client.util.Factory.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -421,8 +398,6 @@ declare module com {
 /// <reference path="./com.pusher.client.connection.ConnectionStateChange.d.ts" />
 /// <reference path="./com.pusher.client.connection.impl.InternalConnection.d.ts" />
 /// <reference path="./com.pusher.client.util.Factory.d.ts" />
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -449,7 +424,6 @@ declare module com {
 /// <reference path="./com.pusher.client.channel.ChannelEventListener.d.ts" />
 /// <reference path="./com.pusher.client.channel.ChannelState.d.ts" />
 /// <reference path="./com.pusher.client.channel.SubscriptionEventListener.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -498,12 +472,6 @@ import javautilMap = java.util.Map;
 /// <reference path="./com.pusher.client.channel.User.d.ts" />
 /// <reference path="./com.pusher.client.connection.impl.InternalConnection.d.ts" />
 /// <reference path="./com.pusher.client.util.Factory.d.ts" />
-/// <reference path="./java.lang.Integer.d.ts" />
-/// <reference path="./java.lang.Object.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
-/// <reference path="./java.util.List.d.ts" />
-/// <reference path="./java.util.Map.d.ts" />
-/// <reference path="./java.util.Set.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -554,7 +522,6 @@ declare module com {
 /// <reference path="./com.pusher.client.channel.SubscriptionEventListener.d.ts" />
 /// <reference path="./com.pusher.client.connection.impl.InternalConnection.d.ts" />
 /// <reference path="./com.pusher.client.util.Factory.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -613,8 +580,6 @@ declare module com {
 }
 
 /// <reference path="./com.pusher.client.connection.ConnectionStateChange.d.ts" />
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -635,7 +600,6 @@ declare module com {
 	}
 }
 
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -675,7 +639,6 @@ declare module com {
 
 /// <reference path="./com.pusher.client.connection.ConnectionEventListener.d.ts" />
 /// <reference path="./com.pusher.client.connection.ConnectionState.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -711,10 +674,6 @@ declare module com {
 import javanetURI = java.net.URI;
 /// <reference path="./com.pusher.client.connection.websocket.WebSocketListener.d.ts" />
 /// <reference path="./com.pusher.java_websocket.handshake.ServerHandshake.d.ts" />
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
-/// <reference path="./java.net.Proxy.d.ts" />
-/// <reference path="./java.net.URI.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -738,9 +697,6 @@ declare module com {
 /// <reference path="./com.pusher.client.connection.ConnectionState.d.ts" />
 /// <reference path="./com.pusher.client.util.Factory.d.ts" />
 /// <reference path="./com.pusher.java_websocket.handshake.ServerHandshake.d.ts" />
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
-/// <reference path="./java.net.Proxy.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -771,8 +727,6 @@ declare module com {
 }
 
 /// <reference path="./com.pusher.java_websocket.handshake.ServerHandshake.d.ts" />
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -800,8 +754,6 @@ declare module com {
 }
 
 /// <reference path="./com.pusher.client.connection.ConnectionStateChange.d.ts" />
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -821,9 +773,6 @@ declare module com {
 
 /// <reference path="./com.pusher.client.channel.User.d.ts" />
 /// <reference path="./com.pusher.client.connection.ConnectionStateChange.d.ts" />
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
-/// <reference path="./java.util.Set.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -846,8 +795,6 @@ declare module com {
 }
 
 /// <reference path="./com.pusher.client.connection.ConnectionStateChange.d.ts" />
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -867,8 +814,6 @@ declare module com {
 }
 
 /// <reference path="./com.pusher.java_websocket.handshake.ServerHandshake.d.ts" />
-/// <reference path="./java.lang.Exception.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -898,12 +843,6 @@ import javalangThread = java.lang.Thread;
 /// <reference path="./com.pusher.client.connection.impl.InternalConnection.d.ts" />
 /// <reference path="./com.pusher.client.connection.websocket.WebSocketClientWrapper.d.ts" />
 /// <reference path="./com.pusher.client.connection.websocket.WebSocketListener.d.ts" />
-/// <reference path="./java.lang.Runnable.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
-/// <reference path="./java.lang.Thread.d.ts" />
-/// <reference path="./java.net.Proxy.d.ts" />
-/// <reference path="./java.net.URI.d.ts" />
-/// <reference path="./java.util.concurrent.ScheduledExecutorService.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {
@@ -933,10 +872,6 @@ declare module com {
 
 import javalangBoolean = java.lang.Boolean;
 import javautilHashMap = java.util.HashMap;
-/// <reference path="./java.lang.Boolean.d.ts" />
-/// <reference path="./java.lang.String.d.ts" />
-/// <reference path="./java.util.HashMap.d.ts" />
-/// <reference path="./java.util.Map.d.ts" />
 declare module com {
 	export module pusher {
 		export module client {

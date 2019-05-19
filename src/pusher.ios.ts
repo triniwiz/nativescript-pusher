@@ -1,15 +1,20 @@
-/// <reference path="./node_modules/tns-core-modules/tns-core-modules.d.ts" />
 import { Common } from './pusher.common';
 import { Options } from './interfaces';
 import { ConnectionStatus } from './enums';
 export * from './interfaces';
 export * from './enums';
 import { deserialize } from './helper';
-import { getClass } from 'tns-core-modules/utils/types';
+
+declare class WeakRef<T> {
+  constructor(target: any);
+}
+
 export class Pusher extends Common {
-  private _options;
   _connectionCallback;
   ios: PTPusher;
+  private _options;
+  private _delegate: any;
+  private _presenceDelegate: any;
   constructor(apiKey: string, options: Options = { encrypted: true }) {
     super();
     this.channelsCallback = new Map();
@@ -17,23 +22,24 @@ export class Pusher extends Common {
     this.eventChannels = new Map();
     this.privateChannelsCallback = new Map();
     this.privateEventChannels = new Map();
+    this._delegate = TNSPusherDelegateImpl.initWithOwner(new WeakRef(this));
     if (options.cluster) {
       this.ios = PTPusher.pusherWithKeyDelegateEncryptedCluster(
         apiKey,
-        TNSPusherDelegateImpl.initWithOwner(new WeakRef(this)),
+        this._delegate,
         options.encrypted,
         options.cluster
       );
     } else if (!options.cluster && !options.encrypted) {
       this.ios = PTPusher.pusherWithKeyDelegateEncrypted(
         apiKey,
-        TNSPusherDelegateImpl.initWithOwner(new WeakRef(this)),
+        this._delegate,
         options.encrypted
       );
     } else {
       this.ios = PTPusher.pusherWithKeyDelegate(
         apiKey,
-        TNSPusherDelegateImpl.initWithOwner(new WeakRef(this))
+        this._delegate
       );
     }
   }
@@ -80,9 +86,12 @@ export class Pusher extends Common {
     let presenceChannel = this.ios.channelNamed(`presence-${channelName}`);
     if (presenceChannel) {
       if (typeof callback === 'function') {
+        if (!this._presenceDelegate) {
+          this._presenceDelegate = TNSPusherPresenceChannelDelegateImpl.initWithOwner(new WeakRef(this));
+        }
         presenceChannel = this.ios.subscribeToPresenceChannelNamedDelegate(
           channelName,
-          TNSPusherPresenceChannelDelegateImpl.initWithOwner(new WeakRef(this))
+          this._presenceDelegate
         );
       } else {
         presenceChannel = this.ios.subscribeToPresenceChannelNamed(channelName);
@@ -175,18 +184,9 @@ export class Pusher extends Common {
   }
 }
 
-export class TNSPusherDelegateImpl extends NSObject
-  implements PTPusherDelegate {
-  public static ObjCProtocols = [PTPusherDelegate];
-  private _owner: WeakRef<Pusher>;
-  private _previous = ConnectionStatus.DISCONNECTED;
-  public static initWithOwner(owner: WeakRef<Pusher>): TNSPusherDelegateImpl {
-    const delegate = new TNSPusherDelegateImpl();
-    delegate._owner = owner;
-    return delegate;
-  }
-
-  pusherConnectionDidConnect(
+const TNSPusherDelegateImpl = (<any>NSObject).extend({
+  _previous: ConnectionStatus.DISCONNECTED,
+  pusherConnectionDidConnect: function(
     pusher: PTPusher,
     connection: PTPusherConnection
   ): void {
@@ -199,9 +199,9 @@ export class TNSPusherDelegateImpl extends NSObject
       });
       this._previous = ConnectionStatus.CONNECTED;
     }
-  }
+  },
 
-  pusherConnectionDidDisconnectWithErrorWillAttemptReconnect(
+  pusherConnectionDidDisconnectWithErrorWillAttemptReconnect: function(
     pusher: PTPusher,
     connection: PTPusherConnection,
     error: NSError,
@@ -216,25 +216,24 @@ export class TNSPusherDelegateImpl extends NSObject
       });
       this._previous = ConnectionStatus.DISCONNECTED;
     }
-  }
+  },
 
-  pusherConnectionFailedWithError(
+  pusherConnectionFailedWithError: function(
     pusher: PTPusher,
     connection: PTPusherConnection,
     error: NSError
   ): void {
     const owner = this._owner.get();
-    const callback = owner._connectionCallback;
-    if (typeof callback === 'function') {
+    if (typeof owner._connectionCallback === 'function') {
       owner._connectionCallback(null, {
         current: ConnectionStatus.DISCONNECTED,
         previous: this._previous
       });
       this._previous = ConnectionStatus.DISCONNECTED;
     }
-  }
+  },
 
-  pusherDidFailToSubscribeToChannelWithError(
+  pusherDidFailToSubscribeToChannelWithError: function(
     pusher: PTPusher,
     channel: PTPusherChannel,
     error: NSError
@@ -246,9 +245,9 @@ export class TNSPusherDelegateImpl extends NSObject
         callback(error.localizedDescription, null);
       }
     }
-  }
+  },
 
-  pusherDidSubscribeToChannel(
+  pusherDidSubscribeToChannel: function(
     pusher: PTPusher,
     channel: PTPusherChannel
   ): void {
@@ -260,20 +259,17 @@ export class TNSPusherDelegateImpl extends NSObject
       }
     }
   }
-}
+}, {
+  protocols: [PTPusherDelegate]
+});
+TNSPusherDelegateImpl['initWithOwner'] = function (owner: WeakRef<Pusher>) {
+  const handler = TNSPusherDelegateImpl.new();
+  handler._owner = owner;
+  return handler;
+};
 
-export class TNSPusherPresenceChannelDelegateImpl extends NSObject
-  implements PTPusherPresenceChannelDelegate {
-  public static ObjCProtocols = [PTPusherPresenceChannelDelegate];
-  private _owner: WeakRef<Pusher>;
-  public static initWithOwner(
-    owner: WeakRef<Pusher>
-  ): TNSPusherPresenceChannelDelegateImpl {
-    const delegate = new TNSPusherPresenceChannelDelegateImpl();
-    delegate._owner = owner;
-    return delegate;
-  }
-  presenceChannelDidSubscribe(channel: PTPusherPresenceChannel): void {
+const TNSPusherPresenceChannelDelegateImpl = (<any>NSObject).extend({
+  presenceChannelDidSubscribe: function(channel: PTPusherPresenceChannel): void {
     const owner = this._owner.get();
     if (owner.presenceChannelsCallback.has(channel.name)) {
       const callback = owner.presenceChannelsCallback.get(channel.name);
@@ -284,9 +280,22 @@ export class TNSPusherPresenceChannelDelegateImpl extends NSObject
         });
       }
     }
-  }
+  },
 
-  presenceChannelMemberAdded(
+  presenceChannelMemberAdded: function(
+    channel: PTPusherPresenceChannel,
+    member: PTPusherChannelMember
+  ): void {
+    const owner = this._owner.get();
+    if (owner.presenceChannelsCallback.has(channel.name)) {
+      const callback = owner.presenceChannelsCallback.get(channel.name);
+      if (callback) {
+        callback(null, { channelName: channel.name, user: member.userID });
+      }
+    }
+  },
+
+  presenceChannelMemberRemoved: function(
     channel: PTPusherPresenceChannel,
     member: PTPusherChannelMember
   ): void {
@@ -298,17 +307,11 @@ export class TNSPusherPresenceChannelDelegateImpl extends NSObject
       }
     }
   }
-
-  presenceChannelMemberRemoved(
-    channel: PTPusherPresenceChannel,
-    member: PTPusherChannelMember
-  ): void {
-    const owner = this._owner.get();
-    if (owner.presenceChannelsCallback.has(channel.name)) {
-      const callback = owner.presenceChannelsCallback.get(channel.name);
-      if (callback) {
-        callback(null, { channelName: channel.name, user: member.userID });
-      }
-    }
-  }
-}
+}, {
+  protocols: [PTPusherPresenceChannelDelegate]
+});
+TNSPusherPresenceChannelDelegateImpl['initWithOwner'] = function (owner: WeakRef<Pusher>) {
+  const handler = TNSPusherPresenceChannelDelegateImpl.new();
+  handler._owner = owner;
+  return handler;
+};
