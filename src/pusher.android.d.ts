@@ -6,7 +6,7 @@ export declare class Pusher extends Common {
     private _options;
     android: com.pusher.client.Pusher;
     constructor(apiKey: string, options?: Options);
-    private getConnectionStatus(status);
+    private getConnectionStatus;
     connect(callback?: Function): void;
     disconnect(): void;
     subscribeToChannelEvent(channelName: string, event: string, callback: Function): void;

@@ -20,28 +20,34 @@ export function serialize(data) {
   }
 }
 export function deserialize(nativeData) {
-  switch (types.getClass(nativeData)) {
-    case 'NSNull':
-      return null;
-    case 'NSMutableDictionary':
-    case 'NSDictionary':
-      let obj = {};
-      const length = nativeData.count;
-      const keysArray = nativeData.allKeys as NSArray<any>;
-      for (let i = 0; i < length; i++) {
-        const nativeKey = keysArray.objectAtIndex(i);
-        obj[nativeKey] = deserialize(nativeData.objectForKey(nativeKey));
-      }
-      return obj;
-    case 'NSMutableArray':
-    case 'NSArray':
-      let array = [];
-      const len = nativeData.count;
-      for (let i = 0; i < len; i++) {
-        array[i] = deserialize(nativeData.objectAtIndex(i));
-      }
-      return array;
-    default:
-      return nativeData;
+  if (types.isNullOrUndefined(nativeData)) {
+    // some native values will already be js null values
+    // calling types.getClass below on null/undefined will cause crash
+    return null;
+  } else {
+    switch (types.getClass(nativeData)) {
+      case 'NSNull':
+        return null;
+      case 'NSMutableDictionary':
+      case 'NSDictionary':
+        let obj = {};
+        const length = nativeData.count;
+        const keysArray = nativeData.allKeys as NSArray<any>;
+        for (let i = 0; i < length; i++) {
+          const nativeKey = keysArray.objectAtIndex(i);
+          obj[nativeKey] = deserialize(nativeData.objectForKey(nativeKey));
+        }
+        return obj;
+      case 'NSMutableArray':
+      case 'NSArray':
+        let array = [];
+        const len = nativeData.count;
+        for (let i = 0; i < len; i++) {
+          array[i] = deserialize(nativeData.objectAtIndex(i));
+        }
+        return array;
+      default:
+        return nativeData;
+    }
   }
 }

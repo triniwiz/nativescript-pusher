@@ -65,7 +65,7 @@ export class Pusher extends Common {
 
   connect(callback?: Function): void {
     if (typeof callback === 'function') {
-      const ref = new WeakRef(this);
+      const ref = new java.lang.ref.WeakReference(this);
       this.android.connect(
         new com.pusher.client.connection.ConnectionEventListener({
           onConnectionStateChange(change) {
@@ -96,7 +96,7 @@ export class Pusher extends Common {
     const channel = this.android.getChannel(channelName);
     if (channel) {
       if (channel && !channel.isSubscribed()) {
-        const ref = new WeakRef(this);
+        const ref = new java.lang.ref.WeakReference(this);
         const binding = new com.pusher.client.channel.SubscriptionEventListener(
           {
             onEvent(cName: string, eName: string, data: string) {
@@ -210,7 +210,7 @@ export class Pusher extends Common {
     if (this.android.getPrivateChannel(channelName)) {
       const channel = this.android.getPrivateChannel(channelName);
       if (channel && !channel.isSubscribed()) {
-        const ref = new WeakRef(this);
+        const ref = new java.lang.ref.WeakReference(this);
         const binding = new com.pusher.client.channel.SubscriptionEventListener(
           {
             onEvent(cName: string, eName: string, data: string) {
