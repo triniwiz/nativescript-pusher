@@ -26,3 +26,7 @@ demo/report/report.html
 demo/report/stats.json
 !demo-vue/app/app.js
 package-lock.json
+!beams/postinstall.js
+!beams/preuninstall.js
+!beams/lib/after-prepare.js
+!beams/nativescript-hook/index.js
