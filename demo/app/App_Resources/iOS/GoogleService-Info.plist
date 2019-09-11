@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>550232807871-ciosdu7sch92japgbooouut5qs32q5k6.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.550232807871-ciosdu7sch92japgbooouut5qs32q5k6</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDZY787Zm9QcWeOwDZU5MLR0B1wPmTltw0</string>
+	<key>GCM_SENDER_ID</key>
+	<string>550232807871</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.triniwiz.ns.pusher</string>
+	<key>PROJECT_ID</key>
+	<string>nativescript-pusher</string>
+	<key>STORAGE_BUCKET</key>
+	<string>nativescript-pusher.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:550232807871:ios:f417607ed106d3e976690a</string>
+	<key>DATABASE_URL</key>
+	<string>https://nativescript-pusher.firebaseio.com</string>
+</dict>
+</plist>

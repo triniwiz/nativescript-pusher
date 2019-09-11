@@ -1,13 +1,28 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
-  <StackLayout>
-    <Button tap="connect" text="Connect"/>
-    <Label text="{{'Connection Status ' +  connectionStatus }}"/>
-    <Label text="{{ 'Channel Name ' + channelName +  ': Event Name ' + eventName }}"/>
-    <Button tap="disconnect" text="Disconnect"/>
-    <ListView items="{{messages}}" height="100%">
-    <ListView.itemTemplate>
-    <Label text="{{ text }}" class="message" textWrap="true"/>
-    </ListView.itemTemplate>
-    </ListView>
-  </StackLayout>
+<!--
+The markup in NativeScript apps contains a series of user interface components, each
+of which NativeScript renders with a platform-specific iOS or Android native control.
+You can find a full list of user interface components you can use in your app at
+https://docs.nativescript.org/ui/components.
+-->
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="loaded" navigatingTo="navigatingTo" class="page">
+    <!--
+    The ActionBar is the NativeScript common abstraction over the Android ActionBar and iOS NavigationBar.
+    http://docs.nativescript.org/ui/action-bar
+    -->
+    <Page.actionBar>
+        <ActionBar title="My App" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <StackLayout>
+        <Button tap="connect" text="Connect"/>
+        <Label text="{{'Connection Status ' +  connectionStatus }}"/>
+        <Label text="{{ 'Channel Name ' + channelName +  ': Event Name ' + eventName }}"/>
+        <Button tap="disconnect" text="Disconnect"/>
+        <ListView items="{{messages}}" height="100%">
+            <ListView.itemTemplate>
+                <Label text="{{ text }}" class="message" textWrap="true"/>
+            </ListView.itemTemplate>
+        </ListView>
+    </StackLayout>
 </Page>
