@@ -1,4 +1,4 @@
-#NativeScript Pusher
+# NativeScript Pusher
 ![logo](docs/images/pusher-logo.png "Pusher Logo")
 
 ### Features
