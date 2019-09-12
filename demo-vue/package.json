@@ -5,13 +5,16 @@
   "author": "Osei Fortune <fortune.osei@yahoo.com>",
   "license": "MIT",
   "nativescript": {
-    "id": "org.nativescript.application",
+    "id": {
+      "android": "com.triniwiz.ns_pusher",
+      "ios": "com.triniwiz.ns.pusher"
+    },
     "templateVersion": "v2",
     "tns-android": {
-      "version": "6.0.0"
+      "version": "6.1.0"
     },
     "tns-ios": {
-      "version": "6.0.1"
+      "version": "6.1.0"
     }
   },
   "dependencies": {
@@ -22,6 +25,7 @@
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
+    "@types/node": "^12.7.5",
     "babel-loader": "^8.0.2",
     "nativescript-dev-webpack": "^1.0.0",
     "nativescript-vue-template-compiler": "^2.0.0",
