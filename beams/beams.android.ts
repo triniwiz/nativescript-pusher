@@ -1,10 +1,6 @@
 import * as utils from 'tns-core-modules/utils/utils';
 import * as app from 'tns-core-modules/application';
 
-const receiver = require('./receiver');
-if (receiver) {
-    receiver.initNotificationService();
-}
 declare var com;
 let messageHolder;
 app.android.on('activityNewIntent', args => {
@@ -12,28 +8,31 @@ app.android.on('activityNewIntent', args => {
     if (intent) {
         const extras = intent.getExtras();
         let object = {};
+        let fcm = {};
         if (extras) {
             const iterator = extras.keySet().iterator();
             while (iterator.hasNext()) {
-                const key = iterator.next();
-                switch (key) {
-                    case 'google.sent_time':
-                        object[key] = extras.getLong(key);
-                        break;
-                    case 'google.ttl':
-                        object[key] = extras.getInt(key);
-                        break;
-                    default:
-                        object[key] = extras.get(key);
-                        break;
+                const key = iterator.next() as string;
+                if (key.startsWith('google.')) {
+                    const new_key = key.replace('google.', '');
+                    if (key === 'google.sent_time') {
+                        fcm[new_key] = extras.getLong(key);
+                    } else if (key === 'google.ttl') {
+                        fcm[new_key] = extras.getInt(key);
+                    } else {
+                        fcm[new_key] = extras.get(key);
+                    }
+                } else {
+                    object[key] = extras.get(key);
                 }
             }
+            object['fcm'] = fcm;
         }
         const pusher = extras ? extras.get('pusher') : null;
         if (pusher) {
             let pusherVal;
             try {
-                pusherVal = JSON.parse(extras.get('pusher'))
+                pusherVal = JSON.parse(extras.get('pusher'));
             } catch (e) {
                 pusherVal = pusher;
             }
@@ -63,9 +62,8 @@ app.android.on('activityResumed', args => {
 
 
 export class TNSPusherBeams {
-    static _messageCallback: any;
-    static _tokenCallback: any;
     static _interestsCallback: any;
+    static _messageCallback: any;
 
     public static start(instanceId: string) {
         com.pusher.pushnotifications.PushNotifications.start(
@@ -102,36 +100,26 @@ export class TNSPusherBeams {
         callback: (message: any) => void
     ) {
         this._messageCallback = callback;
-        /* com.pusher.pushnotifications.PushNotifications.setOnMessageReceivedListenerForVisibleActivity(app.android.startActivity, new com.pusher.pushnotifications.PushNotificationReceivedListener({
-             onMessageReceived(remoteMessage) {
-                 const message = {
-                     from: remoteMessage.getFrom(),
-                     data: {}
-                 };
-
-                 const notification = remoteMessage.getNotification();
-                 if (notification) {
-                     message['title'] = notification.getTitle();
-                     message['body'] = notification.getBody();
-                 }
-                 const data = remoteMessage.getData() as java.util.Map<string, string>;
-                 const keys = data.keySet().iterator();
-                 while (keys.hasNext()) {
-                     const key = keys.next();
-                     try {
-                         message.data[key] = JSON.parse(data.get(key));
-                     } catch (e) {
-                         message.data[key] = data.get(key);
-                     }
-
-                 }
-                 callback(message);
-             }
-         }))*/
+        com.github.triniwiz.pusher.BeamsPlugin.setOnMessageListener(new com.github.triniwiz.pusher.BeamsPlugin.Listener({
+            onSuccess(data) {
+                let message;
+                try {
+                    message = JSON.parse(data);
+                } catch (e) {
+                    message = data;
+                }
+                callback(message);
+            }
+        }));
     }
 
     public static addOnPushTokenReceivedCallback(callback: (token: any) => void) {
-        this._tokenCallback = callback;
+        com.github.triniwiz.pusher.BeamsPlugin.setOnTokenListener(new com.github.triniwiz.pusher.BeamsPlugin.Listener({
+            onSuccess(data) {
+                callback(data);
+            }
+        }));
+
     }
 
     public static getDeviceInterests() {

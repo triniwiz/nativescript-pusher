@@ -1,7 +1,6 @@
 export declare class TNSPusherBeams {
-    static _messageCallback: any;
-    static _tokenCallback: any;
     static _interestsCallback: any;
+    static _messageCallback: any;
     static start(instanceId: string): void;
     static addDeviceInterest(interest: string): void;
     static addOnInterestsChangeCallback(callback: (interests: string[]) => void): void;

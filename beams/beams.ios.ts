@@ -8,7 +8,7 @@ application.on(application.resumeEvent, args => {
             TNSPusherBeams._messageCallback(TNSPusherBeams._cachedMessage);
             TNSPusherBeams._cachedMessage = undefined;
         }
-    })
+    });
 });
 
 @ObjCClass(InterestsChangedDelegate)
@@ -17,7 +17,7 @@ class InterestsChangedDelegateImpl extends NSObject implements InterestsChangedD
         if (TNSPusherBeams._interestsCallback) {
             let items = [];
             if (interests instanceof NSArray) {
-                items = deserialize(interests)
+                items = deserialize(interests);
             } else {
                 items = interests;
             }
@@ -49,12 +49,12 @@ export class TNSPusherBeams {
             if (message.data) {
                 Object.keys(message.data).forEach(key => {
                     message[key] = message.data[key];
-                })
+                });
             }
             if (message.aps && message.aps.data) {
                 Object.keys(message.aps.data).forEach(key => {
                     message[key] = message.aps.data[key];
-                })
+                });
             }
             delete message.aps;
             delete message.data;
@@ -69,7 +69,7 @@ export class TNSPusherBeams {
             const doRegistration = () => {
                 const opts = UNAuthorizationOptions.Alert | UNAuthorizationOptions.Sound | UNAuthorizationOptions.Badge;
                 UNUserNotificationCenter.currentNotificationCenter().requestAuthorizationWithOptionsCompletionHandler(opts, (granted, error) => {
-                    console.log('granted', granted, 'error', error, UIApplication.sharedApplication.registeredForRemoteNotifications)
+                    console.log('granted', granted, 'error', error, UIApplication.sharedApplication.registeredForRemoteNotifications);
                     if (granted) {
                         UIApplication.sharedApplication.registerForRemoteNotifications();
                     } else if (error) {
@@ -77,14 +77,14 @@ export class TNSPusherBeams {
                         this._registerRejectCallback = undefined;
                         this._registerResolveCallback = undefined;
                     }
-                })
+                });
             };
             if (UIApplication.sharedApplication) {
-                doRegistration()
+                doRegistration();
             } else {
                 application.on(application.launchEvent, args => {
-                    doRegistration()
-                })
+                    doRegistration();
+                });
             }
         });
     }
@@ -95,7 +95,7 @@ export class TNSPusherBeams {
                 UIApplication.sharedApplication.unregisterForRemoteNotifications();
                 resolve();
             } catch (e) {
-                reject(e)
+                reject(e);
             }
         });
     }
@@ -115,7 +115,7 @@ export class TNSPusherBeams {
             if (notification) {
                 const message = this.getMessage(notification);
                 if (this._messageCallback) {
-                    this._messageCallback(message)
+                    this._messageCallback(message);
                 } else {
                     this._cachedMessage = message;
                 }
