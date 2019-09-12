@@ -30,3 +30,4 @@ package-lock.json
 !beams/preuninstall.js
 !beams/lib/after-prepare.js
 !beams/nativescript-hook/index.js
+beams/platforms/android/beams.aar
