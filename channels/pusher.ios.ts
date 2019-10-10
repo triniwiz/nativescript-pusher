@@ -186,20 +186,19 @@ export class TNSPusherConnection extends TNSPusherConnectionBase {
                     const eventName = reader.readProp(ev, 'eventName', interop.types.id);
                     const data = reader.readProp(ev, 'data', interop.types.id);
                     const userId = reader.readProp(ev, 'userId', interop.types.id);
-                    const nativeEvent = data.objectForKey('event');
-                    if (event === 'error' && nativeEvent === InternalPusherEvents.Error) {
+                    if (event === 'error' && eventName === InternalPusherEvents.Error) {
                         callback({
                             channelName,
                             data: JSON.parse(data)
                         });
                         this.ref._connectionEvents.set(callback, {event, id});
                     }
-                    if (event === 'ping' && nativeEvent === InternalPusherEvents.Ping) {
+                    if (event === 'ping' && eventName === InternalPusherEvents.Ping) {
                         callback('ping');
                         this.ref._connectionEvents.set(callback, {event, id});
                     }
 
-                    if (event === 'pong' && nativeEvent === InternalPusherEvents.Pong) {
+                    if (event === 'pong' && eventName === InternalPusherEvents.Pong) {
                         callback('pong');
                         this.ref._connectionEvents.set(callback, {event, id});
                     }
