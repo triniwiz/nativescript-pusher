@@ -11,11 +11,6 @@ export enum InternalPusherEvents {
 }
 
 export abstract class TNSPusherBase {
-    channelsCallback: Map<String, Function>;
-    privateChannelsCallback: Map<String, Function>;
-    presenceChannelsCallback: Map<String, Function>;
-    eventChannels: Map<String, ChannelEventMap>;
-    privateEventChannels: Map<String, ChannelEventMap>;
     /**
      * Native android pusher instance.
      */
@@ -25,7 +20,7 @@ export abstract class TNSPusherBase {
      */
     ios: any;
 
-    abstract connect(callback?: Function): void;
+    abstract connect(): void;
 
     abstract disconnect(): void;
 
@@ -43,21 +38,15 @@ export abstract class TNSPusherBase {
 }
 
 export abstract class TNSPusherConnectionBase {
-    android;
-    ios;
-
     abstract bind(event: string, callback: Function);
 
     get state() {
-        return ConnectionStatus.INITIALIZED
+        return ConnectionStatus.INITIALIZED;
     }
 }
 
 
 export abstract class TNSPusherChannelBase {
-    android;
-    ios;
-
     abstract bind(event: string, callback: Function);
 
     abstract unbind(event: string, callback?: Function);
