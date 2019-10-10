@@ -1,1 +1,1 @@
-pod 'PusherSwift'
+pod 'PusherSwift', '~> 7.1'

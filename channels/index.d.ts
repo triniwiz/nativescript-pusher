@@ -15,6 +15,7 @@ export interface Options {
     wsPort?: number;
     wssPort?: number;
     autoReconnect?: boolean;
+    authEndpoint?: string;
 }
 
 export enum ConnectionStatus {

@@ -61,4 +61,6 @@ export abstract class TNSPusherChannelBase {
     abstract bind(event: string, callback: Function);
 
     abstract unbind(event: string, callback?: Function);
+
+    abstract trigger(event: string, data: Object);
 }

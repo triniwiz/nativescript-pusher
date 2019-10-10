@@ -97,6 +97,8 @@ declare class Pusher extends NSObject {
 
 	bind(callback: (p1: any) => void): string;
 
+	bindWithEventCallback(eventCallback: (p1: PusherEvent) => void): string;
+
 	connect(): void;
 
 	disconnect(): void;
@@ -153,7 +155,9 @@ declare class PusherChannel extends NSObject {
 
 	bindWithEventNameCallback(eventName: string, callback: (p1: any) => void): string;
 
-	handleEventWithNameData(name: string, data: string): void;
+	bindWithEventNameEventCallback(eventName: string, eventCallback: (p1: PusherEvent) => void): string;
+
+	handleEventWithEvent(event: PusherEvent): void;
 
 	initWithNameConnectionAuth(name: string, connection: PusherConnection, auth: PusherAuth): this;
 
@@ -199,9 +203,13 @@ declare class PusherClientOptions extends NSObject {
 
 	constructor(o: { ocAuthMethod: OCAuthMethod; attemptToReturnJSONObject: boolean; autoReconnect: boolean; ocHost: OCPusherHost; port: number; encrypted: boolean; activityTimeout: number; });
 
+	constructor(o: { ocAuthMethod: OCAuthMethod; autoReconnect: boolean; ocHost: OCPusherHost; port: number; encrypted: boolean; activityTimeout: number; });
+
 	initWithAuthMethod(authMethod: OCAuthMethod): this;
 
 	initWithOcAuthMethodAttemptToReturnJSONObjectAutoReconnectOcHostPortEncryptedActivityTimeout(authMethod: OCAuthMethod, attemptToReturnJSONObject: boolean, autoReconnect: boolean, host: OCPusherHost, port: number, encrypted: boolean, activityTimeout: number): this;
+
+	initWithOcAuthMethodAutoReconnectOcHostPortEncryptedActivityTimeout(authMethod: OCAuthMethod, autoReconnect: boolean, host: OCPusherHost, port: number, encrypted: boolean, activityTimeout: number): this;
 
 	setAuthMethodWithAuthMethod(authMethod: OCAuthMethod): void;
 }
@@ -250,11 +258,9 @@ declare class PusherConnection extends NSObject {
 
 	disconnect(): void;
 
-	getEventDataJSONFrom(string: string): any;
+	handleErrorWithError(error: PusherError): void;
 
-	getPusherEventJSONFrom(string: string): NSDictionary<string, any>;
-
-	handleEventWithEventNameJsonObject(eventName: string, jsonObject: NSDictionary<string, any>): void;
+	handleEventWithEvent(event: PusherEvent): void;
 
 	initWithKeySocketUrlOptionsURLSession(key: string, socket: WebSocket, url: string, options: PusherClientOptions, URLSession: NSURLSession): this;
 
@@ -269,12 +275,44 @@ interface PusherDelegate {
 
 	failedToSubscribeToChannelWithNameResponseDataError?(name: string, response: NSURLResponse, data: string, error: NSError): void;
 
+	receivedError?(error: PusherError): void;
+
 	subscribedToChannelWithName?(name: string): void;
 }
 declare var PusherDelegate: {
 
 	prototype: PusherDelegate;
 };
+
+declare class PusherError extends NSObject {
+
+	static alloc(): PusherError; // inherited from NSObject
+
+	static new(): PusherError; // inherited from NSObject
+
+	readonly codeOC: number;
+
+	readonly message: string;
+}
+
+declare class PusherEvent extends NSObject implements NSCopying {
+
+	static alloc(): PusherEvent; // inherited from NSObject
+
+	static new(): PusherEvent; // inherited from NSObject
+
+	readonly channelName: string;
+
+	readonly data: string;
+
+	readonly eventName: string;
+
+	readonly userId: string;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	propertyWithKey(key: string): any;
+}
 
 declare class PusherPresenceChannel extends PusherChannel {
 

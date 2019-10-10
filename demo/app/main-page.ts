@@ -33,14 +33,22 @@ export function navigatingTo(args: EventData) {
     page.bindingContext = context;
 }
 
-
 export function connect() {
-    context.pusher.connection.bind('error', (error) => {
+    context.pusher.connection.bind('state_change', state => {
+        context.set('connectionStatus', state.current);
+    });
+    context.pusher.connection.bind('error', error => {
         console.dir(error);
     });
 
     context.pusher.connection.bind('connected', () => {
-        console.log('connected');
+        channel.bind('pusher:subscription_succeeded', ()=>{
+            if (app.android) {
+                channel.trigger('test-android', { name: 'Osei' });
+             } else {
+                 channel.trigger('test-ios', { name: 'Osei' });
+             }
+        })
     });
 
     subscribe();
@@ -58,35 +66,16 @@ export function disconnect() {
 let channel;
 
 function subscribe() {
+    const handler = data => {
+        context.set('channelName', data['channelName']);
+        context.set('eventName', data['eventName']);
+        context.set('messages', data['data']['messages']);
+    };
     if (app.android) {
-        /*context.pusher.subscribeToChannelEvent(
-            'android',
-            'test-android',
-            (error, data) => {
-                if (!error) {
-                    context.set('channelName', data['channelName']);
-                    context.set('eventName', data['eventName']);
-                    context.set('messages', data['data']['messages']);
-                } else {
-                    console.log(JSON.stringify(error));
-                }
-            }
-        );*/
+        channel = context.pusher.subscribe('private-android');
+        channel.bind('test-android', handler);
     } else {
-        channel = context.pusher.subscribe('ios');
-        const handler = (data) => {
-            context.set('channelName', data['channel']);
-            context.set('eventName', data['event']);
-            context.set('messages', data['data']['messages']);
-        };
+        channel = context.pusher.subscribe('private-ios');
         channel.bind('test-ios', handler);
-        /*channel.bind('test-ios', (data) => {
-            context.set('channelName', data['channelName']);
-            context.set('eventName', data['eventName']);
-            context.set('messages', data['data']['messages']);
-        });
-        channel.bind('error', (error) => {
-            console.log('channel bind', JSON.stringify(error));
-        });*/
     }
 }
