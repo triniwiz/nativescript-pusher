@@ -1,0 +1,11 @@
+# JetBrains project files
+.idea
+
+# NPM
+node_modules
+
+# NativeScript application
+hooks
+platforms
+
+!webpack.config.js

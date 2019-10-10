@@ -1,0 +1,4 @@
+platform :ios, '10.0'
+use_frameworks!
+
+pod 'PushNotifications', :git => 'https://github.com/triniwiz/push-notifications-swift'

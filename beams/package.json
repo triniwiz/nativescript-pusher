@@ -1,0 +1,61 @@
+{
+	"name": "@nativescript-pusher/beams",
+	"version": "2.0.1",
+	"description": "Pusher Beams client for NativeScript",
+	"main": "beams",
+	"typings": "index.d.ts",
+	"nativescript": {
+		"platforms": {
+			"android": "6.0.0",
+			"ios": "6.0.0"
+		},
+		"hooks": [
+			{
+				"type": "after-prepare",
+				"script": "lib/after-prepare.js",
+				"inject": true
+			}
+		]
+	},
+	"scripts": {
+		"tsc": "npm i && tsc",
+		"build": "npm run tsc",
+		"build.native": "node scripts/build-native.js",
+		"postclone": "npm i && node scripts/postclone.js",
+		"tslint": "cd .. && tslint \"**/*.ts\" --config tslint.json --exclude \"**/node_modules/**\"",
+		"plugin.tscwatch": "npm run tsc -- -w",
+		"ci.tslint": "npm i && tslint '**/*.ts' --config '../tslint.json' --exclude '**/node_modules/**' --exclude '**/platforms/**'",
+		"clean": "rimraf node_modules package-lock.json",
+		"postinstall": "node postinstall.js",
+		"preuninstall": "node preuninstall.js"
+	},
+	"keywords": [
+		"NativeScript",
+		"JavaScript",
+		"Android",
+		"iOS"
+	],
+	"author": {
+		"name": "Osei Fortune",
+		"email": "fortune.osei@yahoo.com"
+	},
+	"bugs": {
+		"url": "https://github.com/triniwiz/nativescript-pusher/issues"
+	},
+	"license": "Apache-2.0",
+	"homepage": "https://github.com/triniwiz/nativescript-pusher",
+	"readmeFilename": "README.md",
+	"devDependencies": {
+		"tns-core-modules": "^5.0.0",
+		"tns-platform-declarations": "^5.0.0",
+		"typescript": "~3.3.3",
+		"prompt": "^1.0.0",
+		"rimraf": "^2.6.3",
+		"tslint": "^5.12.1",
+		"semver": "^5.6.0"
+	},
+	"dependencies": {
+		"nativescript-hook": "^0.2.5"
+	},
+	"bootstrapper": "nativescript-plugin-seed"
+}

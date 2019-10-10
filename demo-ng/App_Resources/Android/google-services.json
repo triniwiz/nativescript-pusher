@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "550232807871",
+    "firebase_url": "https://nativescript-pusher.firebaseio.com",
+    "project_id": "nativescript-pusher",
+    "storage_bucket": "nativescript-pusher.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:550232807871:android:13fb3f1243f6eba776690a",
+        "android_client_info": {
+          "package_name": "com.triniwiz.ns_pusher"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "550232807871-g9kfhnq4gf4ds8giduet1jft4dhlktbh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCy4IpjyO6e9Z6VQmco62llNVMeBo5GFbI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "550232807871-g9kfhnq4gf4ds8giduet1jft4dhlktbh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
