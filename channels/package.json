@@ -1,6 +1,6 @@
 {
     "name": "@nativescript-pusher/channels",
-    "version": "2.0.0",
+    "version": "2.0.0-alpha.0",
     "description": "Pusher Channels client for NativeScript",
     "main": "pusher",
     "typings": "index.d.ts",
@@ -12,13 +12,12 @@
     },
     "scripts": {
         "tsc": "npm i && tsc",
-        "build": "npm run tsc && npm run build.native",
+        "build": "npm run tsc",
         "build.native": "node scripts/build-native.js",
         "postclone": "npm i && node scripts/postclone.js",
         "tslint": "cd .. && tslint \"**/*.ts\" --config tslint.json --exclude \"**/node_modules/**\"",
         "plugin.tscwatch": "npm run tsc -- -w",
         "ci.tslint": "npm i && tslint '**/*.ts' --config '../tslint.json' --exclude '**/node_modules/**' --exclude '**/platforms/**'",
-        "prepack": "npm run build.native",
         "clean": "rimraf node_modules package-lock.json"
     },
     "keywords": [
