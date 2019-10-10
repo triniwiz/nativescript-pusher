@@ -10,7 +10,7 @@ export interface Options {
   cluster?: string;
   encrypted?: boolean;
   host?: string;
-  pongTimeout?: string;
+  pongTimeout?: number;
   port?: number;
   autoReconnect?: boolean;
   authEndpoint?: string;
