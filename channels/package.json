@@ -1,6 +1,6 @@
 {
     "name": "@nativescript-pusher/channels",
-    "version": "2.0.0-alpha.1",
+    "version": "2.0.0-alpha.2",
     "description": "Pusher Channels client for NativeScript",
     "main": "pusher",
     "typings": "index.d.ts",
