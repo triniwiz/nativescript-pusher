@@ -9,19 +9,25 @@ export class TNSPusher extends TNSPusherBase {
     ios: Pusher;
     private readonly _delegate: any;
     _globalEvents: Map<Function, string>;
-    _channelEvents = new Map<Function, { channelName: string, event: string, id: string }>();
-    _connectionEvents = new Map<Function, { event: string; id: string }>();
+    _channelEvents: Map<Function, { channelName: string, event: string, id: string }>;
+    _connectionEvents: Map<Function, { event: string; id: string }>;
 
     constructor(apiKey: string, options?: Options) {
         super();
         this._globalEvents = new Map<Function, string>();
+        this._channelEvents = new Map<Function, { channelName: string, event: string, id: string }>();
+        this._connectionEvents = new Map<Function, { event: string; id: string }>();
         this._delegate = PusherDelegateImpl.initWithOwner(new WeakRef(this));
         if (options) {
             let authEndpoint = OCAuthMethod.alloc().initWithType(4);
+            let authorizer;
             if (options.authEndpoint) {
                 authEndpoint = OCAuthMethod.alloc().initWithAuthEndpoint(
                     options.authEndpoint
                 );
+            }
+            if (options.authorizer) {
+
             }
             let host = OCPusherHost.alloc().init();
             if (options.cluster) {
@@ -45,6 +51,7 @@ export class TNSPusher extends TNSPusherBase {
         }
 
         this.ios.delegate = this._delegate;
+
     }
 
     connect(): void {
@@ -59,13 +66,16 @@ export class TNSPusher extends TNSPusherBase {
 
     public get connection() {
         if (!this._connection) {
-            this._connection = new TNSPusherConnection(this.ios, this);
+            this._connection = new TNSPusherConnection(this.ios, new WeakRef(this));
         }
         return this._connection;
     }
 
     bind(callback: Function) {
         const id = this.ios.bindWithEventCallback(ev => {
+            if (!ev) {
+                return;
+            }
             const channelName = reader.readProp(ev, 'channelName', interop.types.id);
             const eventName = reader.readProp(ev, 'eventName', interop.types.id);
             const data = reader.readProp(ev, 'data', interop.types.id);
@@ -89,15 +99,23 @@ export class TNSPusher extends TNSPusherBase {
         }
     }
 
+
     subscribe(event: string) {
-        const channel = this.ios.subscribeWithChannelNameOnMemberAddedOnMemberRemoved(
-            event,
-            p1 => {
-            },
-            p1 => {
-            }
-        );
-        return new TNSPusherChannel(this.ios, channel, this);
+        let channel;
+        if (this.ios && this.ios.connection && this.ios.connection.channels && this.ios.connection.channels.findWithName) {
+            channel = this.ios.connection.channels.findWithName(event);
+        }
+        if (!channel) {
+            channel = this.ios.subscribeWithChannelNameOnMemberAddedOnMemberRemoved(
+                event,
+                p1 => {
+                },
+                p1 => {
+                }
+            );
+        }
+
+        return new TNSPusherChannel(this.ios, channel, new WeakRef<TNSPusher>(this));
     }
 
     unsubscribeAll(): void {
@@ -113,13 +131,12 @@ export class TNSPusherChannel extends TNSPusherChannelBase {
     channel: PusherChannel;
     ios: Pusher;
     connection: any;
-    ref: TNSPusher;
+    ref: WeakRef<TNSPusher>;
 
-    constructor(instance: any, channel: any, ref: TNSPusher) {
+    constructor(instance: any, channel: any, ref: WeakRef<TNSPusher>) {
         super();
         this.ios = instance;
         this.channel = channel;
-        this.channel.name;
         this.ref = ref;
     }
 
@@ -141,6 +158,9 @@ export class TNSPusherChannel extends TNSPusherChannelBase {
 
     bind(event: string, callback: Function) {
         const id = this.channel.bindWithEventNameEventCallback(event, ev => {
+            if (!ev) {
+                return;
+            }
             const channelName = reader.readProp(ev, 'channelName', interop.types.id);
             const eventName = reader.readProp(ev, 'eventName', interop.types.id);
             const data = reader.readProp(ev, 'data', interop.types.id);
@@ -152,14 +172,20 @@ export class TNSPusherChannel extends TNSPusherChannelBase {
                 userId
             });
         });
-        this.ref._channelEvents.set(callback, {id, event, channelName: this.channel.name});
+        const owner = this.ref && this.ref.get();
+        if (owner) {
+            owner._channelEvents.set(callback, {id, event, channelName: this.channel.name});
+        }
     }
 
     unbind(event: string, callback: Function) {
-        const data = this.ref._channelEvents.get(callback);
-        if (data) {
-            this.ios.unbindWithCallbackId(data.id);
-            this.ref._channelEvents.delete(callback);
+        const owner = this.ref && this.ref.get();
+        if (owner) {
+            const data = owner._channelEvents.get(callback);
+            if (data) {
+                this.ios.unbindWithCallbackId(data.id);
+                owner._channelEvents.delete(callback);
+            }
         }
     }
 }
@@ -167,18 +193,19 @@ export class TNSPusherChannel extends TNSPusherChannelBase {
 export class TNSPusherConnection extends TNSPusherConnectionBase {
     ios: Pusher;
     _state: any;
-    ref: TNSPusher;
+    ref: WeakRef<TNSPusher>;
 
-    constructor(instance: any, ref: TNSPusher) {
+    constructor(instance: any, ref: WeakRef<TNSPusher>) {
         super();
         this.ios = instance;
         this.ref = ref;
     }
 
     bind(event: string, callback: Function) {
+        const owner = this.ref.get();
         if (event === 'state_change' || event === 'connected') {
             const id = NSUUID.UUID().UUIDString;
-            this.ref._connectionEvents.set(callback, {event, id});
+            owner._connectionEvents.set(callback, {event, id});
         } else {
             const id = this.ios.bindWithEventCallback(ev => {
                 if (ev) {
@@ -191,16 +218,16 @@ export class TNSPusherConnection extends TNSPusherConnectionBase {
                             channelName,
                             data: JSON.parse(data)
                         });
-                        this.ref._connectionEvents.set(callback, {event, id});
+                        owner._connectionEvents.set(callback, {event, id});
                     }
                     if (event === 'ping' && eventName === InternalPusherEvents.Ping) {
                         callback('ping');
-                        this.ref._connectionEvents.set(callback, {event, id});
+                        owner._connectionEvents.set(callback, {event, id});
                     }
 
                     if (event === 'pong' && eventName === InternalPusherEvents.Pong) {
                         callback('pong');
-                        this.ref._connectionEvents.set(callback, {event, id});
+                        owner._connectionEvents.set(callback, {event, id});
                     }
                 }
             });
@@ -208,12 +235,16 @@ export class TNSPusherConnection extends TNSPusherConnectionBase {
     }
 
     unbind(event: string, callback?: Function) {
-        const data = this.ref._connectionEvents.get(callback);
-        if (data) {
-            this.ios.unbindWithCallbackId(data.id);
-            this.ref._connectionEvents.delete(callback);
+        const owner = this.ref.get();
+        if (owner) {
+            const data = owner._connectionEvents.get(callback);
+            if (data) {
+                this.ios.unbindWithCallbackId(data.id);
+                owner._connectionEvents.delete(callback);
+            }
         }
     }
+
 
     get state() {
         return this._state;

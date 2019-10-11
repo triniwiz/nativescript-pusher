@@ -1,10 +1,8 @@
 import { ConnectionStatus } from './enums';
-
 export interface ChannelEventMap {
     binding: any;
     callback: Function;
 }
-
 export interface Options {
     activityTimeout?: number;
     cluster?: string;
@@ -14,12 +12,16 @@ export interface Options {
     port?: number;
     autoReconnect?: boolean;
     authEndpoint?: string;
-    authorizer?: (channel, options) => { authorize: (socketId, callback) => void };
+    authorizer?: (channel: any, options: any) => {
+        authorize: (socketId: any, callback: any) => void;
+    };
     wsPort?: number;
     wssPort?: number;
-    auth?: { headers?: Object, params?: Object }
+    auth?: {
+        headers?: Object;
+        params?: Object;
+    };
 }
-
 export interface ConnectionStatusEvent {
     current: ConnectionStatus;
     previous: ConnectionStatus;
