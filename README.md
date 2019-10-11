@@ -2,7 +2,7 @@
 ![logo](docs/images/pusher-logo.png "Pusher Logo")
 
 ### Features
- - Channels
+ - [Channels](docs/Channels.md)
  - [Beams](docs/Beams.md)
  - Chatkit
 
