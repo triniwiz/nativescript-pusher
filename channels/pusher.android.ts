@@ -1,8 +1,4 @@
-import {
-    TNSPusherBase,
-    TNSPusherChannelBase,
-    TNSPusherConnectionBase
-} from './pusher.common';
+import { TNSPusherBase, TNSPusherChannelBase, TNSPusherConnectionBase } from './pusher.common';
 import { Options } from './interfaces';
 import { ConnectionStatus } from './enums';
 
@@ -21,22 +17,41 @@ export class TNSPusher extends TNSPusherBase {
     constructor(apiKey: string, options?: Options) {
         super();
         if (options) {
-          const opts = new com.pusher.client.PusherOptions();
+            const opts = new com.pusher.client.PusherOptions();
             if (options.activityTimeout) {
-              opts.setActivityTimeout(options.activityTimeout);
+                opts.setActivityTimeout(options.activityTimeout);
+            }
+            let authorizer = null;
+            if (options.authEndpoint) {
+                let endpoint = options.authEndpoint;
+                if (options.auth && options.auth.params) {
+                    Object.keys(options.auth.params).forEach((key, index) => {
+                        const val = options.auth.params[key];
+                        if (index === 0) {
+                            endpoint = `${endpoint}?${key}=${val}`;
+                        } else {
+                            endpoint = `${endpoint}&${key}=${val}`;
+                        }
+                    });
+                }
+                authorizer = new com.pusher.client.util.HttpAuthorizer(endpoint);
+            }
+            if (authorizer instanceof com.pusher.client.util.HttpAuthorizer && options.auth && options.auth.headers) {
+                const headers = new java.util.HashMap();
+                Object.keys(options.auth.headers).forEach((key) => {
+                    const val = options.auth.headers[key];
+                    headers.put(key, val);
+                });
+                authorizer.setHeaders(headers);
             }
             if (options.authorizer) {
-                const _authorizer = new com.pusher.client.util.HttpAuthorizer(
-                    options.authorizer
-                );
-                opts.setAuthorizer(_authorizer);
+                /*authorizer = new com.pusher.client.Authorizer({
+                    authorize(param0: string, param1: string): string {
+                    }
+                });*/
             }
-
-            if (options.authEndpoint) {
-                const endpoint = new com.pusher.client.util.HttpAuthorizer(
-                    options.authEndpoint
-                );
-                opts.setAuthorizer(endpoint);
+            if (authorizer) {
+                opts.setAuthorizer(authorizer);
             }
             if (options.cluster) {
                 opts.setCluster(options.cluster);
