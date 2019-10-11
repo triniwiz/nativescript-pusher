@@ -1,1 +1,1 @@
-pod 'PusherSwift', '~> 7.1'
+pod 'PusherSwift', :git => 'https://github.com/triniwiz/pusher-websocket-swift.git'
