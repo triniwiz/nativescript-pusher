@@ -7,13 +7,13 @@
 
 ### Usage
 ```typescript
-import Pusher from '@nativescript-pusher/channels';
+import { TNSPusher } from '@nativescript-pusher/channels';
 ```
 
 ## Initialization
 
 ```js
-const socket = new Pusher(APP_KEY, {
+const socket = new TNSPusher(APP_KEY, {
   cluster: APP_CLUSTER,
 });
 ```
@@ -26,7 +26,7 @@ You can get your `APP_KEY` and `APP_CLUSTER` from the [Pusher Channels dashboard
 There are a number of configuration parameters which can be set for the client, which can be passed as an object to the Pusher constructor, i.e.:
 
 ```js
-const socket = new Pusher(APP_KEY, {
+const socket = new TNSPusher(APP_KEY, {
   cluster: APP_CLUSTER,
   authEndpoint: 'http://example.com/pusher/auth',
 });
@@ -46,7 +46,7 @@ For more information see [authenticating users](https://pusher.com/docs/authenti
 Specifies the cluster that pusher-js should connect to. [If you'd like to see a full list of our clusters, click here](https://pusher.com/docs/clusters). If you do not specify a cluster, `mt1` will be used by default.
 
 ```js
-const socket = new Pusher(APP_KEY, {
+const socket = new TNSPusher(APP_KEY, {
   cluster: APP_CLUSTER,
 });
 ```
@@ -64,7 +64,7 @@ Time before the connection is terminated after a ping is sent to the server. Def
 A connection to Pusher Channels is established by providing your `APP_KEY` and `APP_CLUSTER` to the constructor function:
 
 ```js
-const socket = new Pusher(APP_KEY, {
+const socket = new TNSPusher(APP_KEY, {
   cluster: APP_CLUSTER,
 });
 ```
@@ -74,7 +74,7 @@ This returns a socket object which can then be used to subscribe to channels.
 One reason this connection might fail is your account being over its' limits. You can detect this in the client by binding to the `error` event on the `pusher.connection` object. For example:
 
 ```js
-var pusher = new Pusher('app_key');
+var pusher = new TNSPusher('app_key');
 pusher.connection.bind( 'error', function( err ) {
   if( err.error.data.code === 4004 ) {
     log('Over limit!');
